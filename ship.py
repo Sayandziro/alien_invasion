@@ -36,6 +36,8 @@ class Ship:
 		if self.moving_left and self.x_y[0] >= 193:
 			self.x_y[0] -= self.settings.ship_speed
 
+		self.rect.x = self.x_y[0]
+
 
 	def blitme(self):
 		"""Draw the ship at its current location."""
