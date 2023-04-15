@@ -16,14 +16,21 @@ class AlienInvasion:
 
 		self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height), pygame.FULLSCREEN)
 		pygame.display.set_caption("Alien Invasion")
-   
+   		
 		self.ship = Ship(self)
-		self.alien = Alien(self)
 
 		self.bullets = pygame.sprite.Group()
 
+		self.aliens = pygame.sprite.Group()
+
+		self.alien_resources = pygame.image.load("images\\alien.png")
+
+		self._create_fleet()
+
+
 	def run_game(self):
 		"""Start the main loop for the game."""
+
 		while True:
 			self._check_events()
 			self.ship.update()
@@ -75,11 +82,34 @@ class AlienInvasion:
 			self.bullets.add(new_bullet)
 
 
+	def _create_fleet(self):
+		""" Create the fleet of aliens. """
+
+		# Make an alien and find the number of aliens in a row.
+		# Spacing between each alien is equal to one alien width.
+		alien = Alien(self, self.alien_resources)
+		alien_width = alien.rect.width
+		available_space_x = self.settings.screen_width - (2 * alien_width)
+		number_aliens_x = available_space_x // (2 * alien_width)
+
+
+		# Create the first row of aliens.
+		for alien_number in range(number_aliens_x):
+			self._create_alien(alien_number)
+
+
+	def _create_alien(self, alien_number):
+		alien = Alien(self, self.alien_resources)
+		alien_width = alien.rect.width
+		alien.x = alien_width + 2 * alien_width * alien_number
+		alien.rect.x = alien.x
+		self.aliens.add(alien)
+
+
 	def _update_screen(self):
 		"""Update images on the screen, and flip to the new screen."""
 		self.screen.fill(self.settings.bg_color)
 		self.ship.blitme()
-		self.alien.blit_alien()
 
 		# Draw the bullet if it is not out of the screen, else delete it from sprites.
 		for bullet in self.bullets.sprites():
@@ -87,6 +117,8 @@ class AlienInvasion:
 				bullet.draw_bullet()
 			else:
 				self.bullets.remove(bullet)
+
+		self.aliens.draw(self.screen)
 
 		pygame.display.flip()
 
