@@ -2,6 +2,7 @@ import sys
 import pygame
 from settings import Settings
 from ship import Ship
+from alien import Alien
 from bullet import Bullet
 
 
@@ -12,10 +13,12 @@ class AlienInvasion:
 		"""Initialize the game, and create game resources."""
 		pygame.init()
 		self.settings = Settings()
-		self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
+
+		self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height), pygame.FULLSCREEN)
 		pygame.display.set_caption("Alien Invasion")
    
 		self.ship = Ship(self)
+		self.alien = Alien(self)
 
 		self.bullets = pygame.sprite.Group()
 
@@ -48,9 +51,13 @@ class AlienInvasion:
 		elif event.key == pygame.K_LEFT:
 			# Move the ship to the left.
 			self.ship.moving_left = True 
+
 		elif event.key == pygame.K_SPACE:
+			# Fire the bullet on SPACE key.
 			self._fire_bullet()
+
 		if event.key == pygame.K_q:
+			# Quit the game if q is pressed.
 			sys.exit()
 
 
@@ -63,7 +70,7 @@ class AlienInvasion:
 
 	def _fire_bullet(self):
 		""" Create a new bullet and add it to the bullets group. """
-		if len(self.bullets) <= self.settings.bullets_allowed:
+		if len(self.bullets) < self.settings.bullets_allowed:
 			new_bullet = Bullet(self)
 			self.bullets.add(new_bullet)
 
@@ -72,10 +79,11 @@ class AlienInvasion:
 		"""Update images on the screen, and flip to the new screen."""
 		self.screen.fill(self.settings.bg_color)
 		self.ship.blitme()
+		self.alien.blit_alien()
 
 		# Draw the bullet if it is not out of the screen, else delete it from sprites.
 		for bullet in self.bullets.sprites():
-			if bullet.rect.bottom > 0:
+			if bullet.rect.bottom > 0: 
 				bullet.draw_bullet()
 			else:
 				self.bullets.remove(bullet)
