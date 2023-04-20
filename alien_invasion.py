@@ -27,14 +27,18 @@ class AlienInvasion:
 
 		self._create_fleet()
 
+		self.clock = pygame.time.Clock()
+
 
 	def run_game(self):
 		"""Start the main loop for the game."""
 
 		while True:
+			self.clock.tick(120)
+
 			self._check_events()
 			self.ship.update()
-			self.bullets.update()
+			self._update_bullets()
 			self._update_aliens()
 			self._update_screen()
 
@@ -81,6 +85,28 @@ class AlienInvasion:
 		if len(self.bullets) < self.settings.bullets_allowed:
 			new_bullet = Bullet(self)
 			self.bullets.add(new_bullet)
+
+
+	def _update_bullets(self):
+		""" Draw the bullet if it is not out of the screen, else delete it from sprites. """
+		# Update bullet positions.
+		self.bullets.update()
+
+		# Get rid of bullets that have disappeared.
+		for bullet in self.bullets.copy():
+			if bullet.rect.bottom <= 0: 
+				self.bullets.remove(bullet)
+
+
+		# Check for any bullets that have hit aliens.
+		#   If so, get rid of the bullet and the alien.
+		collisions = pygame.sprite.groupcollide(
+				self.bullets, self.aliens, True, True)
+
+		# Repopulate the fleet if destroyed and destroy the bullets.
+		if not self.aliens:
+			self.bullets.empty()
+			self._create_fleet()
 
 
 	def _create_fleet(self):
@@ -142,14 +168,8 @@ class AlienInvasion:
 		"""Update images on the screen, and flip to the new screen."""
 		self.screen.fill(self.settings.bg_color)
 		self.ship.blitme()
-
-		# Draw the bullet if it is not out of the screen, else delete it from sprites.
 		for bullet in self.bullets.sprites():
-			if bullet.rect.bottom > 0: 
-				bullet.draw_bullet()
-			else:
-				self.bullets.remove(bullet)
-
+			bullet.draw_bullet()
 		self.aliens.draw(self.screen)
 
 		pygame.display.flip()
